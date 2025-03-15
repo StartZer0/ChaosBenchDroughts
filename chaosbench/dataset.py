@@ -125,6 +125,36 @@ class S2SObsDataset(Dataset):
 
         return timestamp, x, y
     
+    def analyze_dataset(self):
+        """
+        Analyze the dataset and extract the specified variables.
+        """
+        specified_vars = ['z850', 'z500', 't850', 't500', 'q850', 'q500', 'u850', 'u500', 'v850', 'v500', 't2m', 'd2m', 'u10', 'v10', 'tp', 'pev', 'swvl1', 'swvl2', 'ssrd', 'lai_hv', 'lai_lv']
+        analysis_results = {}
+        
+        for var in specified_vars:
+            analysis_results[var] = []
+            for file_path in self.file_paths[0]:
+                ds = xr.open_dataset(file_path, engine='zarr')
+                if var in ds:
+                    analysis_results[var].append(ds[var].values)
+        
+        return analysis_results
+    
+    def convert_to_csv(self, output_file):
+        """
+        Convert the dataset into a CSV file for model training.
+        """
+        import pandas as pd
+        
+        data = []
+        for idx in range(len(self)):
+            timestamp, x, y = self[idx]
+            data.append([timestamp] + x.flatten().tolist() + y.flatten().tolist())
+        
+        df = pd.DataFrame(data)
+        df.to_csv(output_file, index=False)
+    
     
 class S2SEvalDataset(Dataset):
     """
