@@ -155,6 +155,21 @@ class S2SObsDataset(Dataset):
         df = pd.DataFrame(data)
         df.to_csv(output_file, index=False)
     
+    def filter_midwest_us(self):
+        """
+        Filter the dataset for the midwest region of the US.
+        """
+        midwest_lat_range = (36.5, 49.5)
+        midwest_lon_range = (-104.0, -80.5)
+        
+        filtered_data = []
+        for file_path in self.file_paths[0]:
+            ds = xr.open_dataset(file_path, engine='zarr')
+            ds_midwest = ds.sel(lat=slice(*midwest_lat_range), lon=slice(*midwest_lon_range))
+            filtered_data.append(ds_midwest)
+        
+        return filtered_data
+    
     
 class S2SEvalDataset(Dataset):
     """
